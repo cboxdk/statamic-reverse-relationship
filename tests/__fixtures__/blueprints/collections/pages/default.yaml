@@ -1,0 +1,20 @@
+title: Page
+tabs:
+  main:
+    display: Main
+    sections:
+      - fields:
+          - handle: title
+            field:
+              type: text
+          - handle: related
+            field:
+              type: entries
+              collections:
+                - pages
+          - handle: related_single
+            field:
+              type: entries
+              collections:
+                - pages
+              max_items: 1

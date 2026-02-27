@@ -1,0 +1,41 @@
+<?php
+
+namespace Statamic\Contracts\Query;
+
+/**
+ * @method self where(string $column, mixed $operator = null, mixed $value = null)
+ * @method self whereJsonContains(string $column, mixed $value)
+ * @method self whereStatus(string $status)
+ * @method self orderBy(string $column, string $direction = 'asc')
+ * @method \Illuminate\Support\Collection<int, mixed> get()
+ * @method int count()
+ */
+interface Builder {}
+
+namespace Statamic\Contracts\Entries;
+
+/**
+ * @method self where(string $column, mixed $operator = null, mixed $value = null)
+ * @method self whereStatus(string $status)
+ * @method self orderBy(string $column, string $direction = 'asc')
+ * @method self limit(int $limit)
+ * @method \Illuminate\Support\Collection<int, mixed> get()
+ */
+interface QueryBuilder {}
+
+namespace Statamic\Contracts\Assets;
+
+/**
+ * @method self where(string $column, mixed $operator = null, mixed $value = null)
+ * @method self limit(int $limit)
+ * @method self first()
+ * @method \Illuminate\Support\Collection<int, mixed> get()
+ */
+interface QueryBuilder {}
+
+namespace Statamic\Contracts\Taxonomies;
+
+/**
+ * @method mixed termBlueprint()
+ */
+interface Taxonomy {}

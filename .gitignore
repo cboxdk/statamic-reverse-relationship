@@ -3,4 +3,10 @@ vendor
 mix-manifest.json
 .idea
 public/hot
+public/vendor
 composer.lock
+.chief/
+.phpstan-cache/
+.claude/
+.playwright-mcp/
+*.png

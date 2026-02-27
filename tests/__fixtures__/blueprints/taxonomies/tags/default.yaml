@@ -1,0 +1,14 @@
+title: Tag
+tabs:
+  main:
+    display: Main
+    sections:
+      - fields:
+          - handle: title
+            field:
+              type: text
+          - handle: related_page
+            field:
+              type: entries
+              collections:
+                - pages

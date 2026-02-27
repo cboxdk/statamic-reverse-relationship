@@ -1,19 +1,30 @@
 <?php
 
-namespace Tv2regionerne\StatamicReverseRelationship\Fieldtypes;
+namespace Cbox\ReverseRelationship\Fieldtypes;
 
+use Illuminate\Support\Collection;
+use Statamic\Contracts\Query\Builder;
 use Statamic\Facades\Asset;
 use Statamic\Facades\AssetContainer;
-use Statamic\Facades\Collection;
+use Statamic\Facades\Collection as CollectionFacade;
 use Statamic\Facades\Entry;
 use Statamic\Facades\Taxonomy;
 use Statamic\Facades\Term;
+use Statamic\Fields\Field;
 use Statamic\Fields\Fieldtype;
+use Statamic\Query\OrderedQueryBuilder;
 
 class ReverseRelationship extends Fieldtype
 {
+    /** @var string */
+    protected static $title = 'Reverse Relationship';
+
+    /** @var string */
     protected $icon = 'entries';
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     protected function configFieldItems(): array
     {
         return [
@@ -72,79 +83,212 @@ class ReverseRelationship extends Fieldtype
                         'instructions' => __('The related item sort order'),
                         'type' => 'text',
                     ],
+                    'editable' => [
+                        'display' => __('Editable'),
+                        'instructions' => __('Allow adding and removing related items'),
+                        'type' => 'toggle',
+                        'default' => false,
+                    ],
                 ],
             ],
         ];
     }
 
-    public function preload()
+    /**
+     * @return array{id: string|null, editable: bool}
+     */
+    public function preload(): array
     {
         return [
-            'id' => $this->field()->parent()->id(),
+            'id' => $this->field()?->parent()?->id(),
+            'editable' => (bool) $this->config('editable', false),
         ];
     }
 
-    public function augment($value)
+    /**
+     * @return Collection<int, mixed>|Builder
+     */
+    public function augment(mixed $value): Collection|Builder
     {
-        $id = $this->field->parent()->id();
+        $id = $this->field()?->parent()?->id();
 
-        return $this->getItems($id);
+        if ($id === null) {
+            return collect();
+        }
+
+        $matchingIds = $this->getMatchingIds($id);
+        if ($matchingIds === []) {
+            return collect();
+        }
+
+        $query = $this->getBaseQuery($id);
+        if ($query === null) {
+            return collect();
+        }
+
+        /** @var OrderedQueryBuilder */
+        return (new OrderedQueryBuilder($query, $matchingIds))
+            ->whereIn('id', $matchingIds); /** @phpstan-ignore method.notFound */
     }
 
-    public function preProcessIndex($data)
+    public function preProcessIndex(mixed $data): int
     {
-        $id = $this->field->parent()->id();
+        $id = $this->field()?->parent()?->id();
+
+        if ($id === null) {
+            return 0;
+        }
 
         return $this->getCount($id);
     }
 
-    public function getItems($id)
+    /**
+     * @return Collection<int, mixed>
+     */
+    public function getItems(string $id): Collection
     {
-        return $this->getQuery($id)->get();
+        return $this->getFilteredResults($id);
     }
 
-    public function getCount($id)
+    public function getCount(string $id): int
     {
-        return $this->getQuery($id)->count();
+        return $this->getFilteredResults($id)->count();
     }
 
-    protected function getQuery($id)
+    /**
+     * Get the base query for the configured mode, without the relationship filter.
+     */
+    protected function getBaseQuery(string $id): ?Builder
     {
         $mode = $this->config('mode', 'entries');
 
         if ($mode === 'entries') {
-            $query = Entry::query()->where('collection', $this->config('collection'));
-        } elseif ($mode === 'terms') {
-            // Remove the taxonomy handle from the ID
+            $collection = $this->config('collection');
+            if (! $collection) {
+                return null;
+            }
+
+            /** @var Builder */
+            return Entry::query()
+                ->where('collection', $collection)
+                ->whereStatus('published');
+        }
+
+        if ($mode === 'terms') {
+            $taxonomy = $this->config('taxonomy');
+            if (! $taxonomy) {
+                return null;
+            }
+
+            return Term::query()->where('taxonomy', $taxonomy);
+        }
+
+        if ($mode === 'assets') {
+            $container = $this->config('container');
+            if (! $container) {
+                return null;
+            }
+
+            return Asset::query()->where('container', $container);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the IDs of items that reference the given ID through the configured field.
+     *
+     * We avoid using whereJsonContains/where on the field name because
+     * Statamic's Stache query builder uses getQueryableValue() which can
+     * collide with built-in Entry methods (e.g. page(), collection()).
+     *
+     * @return list<string>
+     */
+    public function getMatchingIds(string $id): array
+    {
+        $mode = $this->config('mode', 'entries');
+
+        if ($mode === 'terms') {
             $id = str($id)->after('::')->value();
-            $query = Term::query()->where('taxonomy', $this->config('taxonomy'));
-        } elseif ($mode === 'assets') {
-            $query = Asset::query()->where('container', $this->config('container'));
+        }
+
+        $query = $this->getBaseQuery($id);
+        if ($query === null) {
+            return [];
         }
 
         $field = $this->getField();
-        $key = $field->type() === 'assets' ? 'max_files' : 'max_items';
-        $method = $field->get($key) !== 1
-            ? 'whereJsonContains'
-            : 'where';
+        if ($field === null) {
+            return [];
+        }
 
+        $fieldHandle = $this->config('field');
+        $key = $field->type() === 'assets' ? 'max_files' : 'max_items';
+        $isSingleValue = $field->get($key) === 1;
+        $sortField = $this->config('sort') ?? 'title';
+
+        /** @var list<string> */
         return $query
-            ->{$method}($this->config('field'), $id)
-            ->orderBy($this->config('sort') ?? 'title');
+            ->orderBy($sortField)
+            ->get()
+            ->filter(function (mixed $item) use ($fieldHandle, $id, $isSingleValue): bool {
+                /** @var \Statamic\Contracts\Data\Augmentable $item */
+                $value = method_exists($item, 'value')
+                    ? $item->value($fieldHandle)
+                    : $item->get($fieldHandle); /** @phpstan-ignore method.notFound */
+                if ($isSingleValue) {
+                    return $value === $id;
+                }
+
+                return is_array($value) && in_array($id, $value, true);
+            })
+            ->map(fn (mixed $item): string => $item->id()) /** @phpstan-ignore method.nonObject */
+            ->values()
+            ->all();
     }
 
-    protected function getField()
+    /**
+     * @return Collection<int, mixed>
+     */
+    protected function getFilteredResults(string $id): Collection
+    {
+        $matchingIds = $this->getMatchingIds($id);
+        if ($matchingIds === []) {
+            return collect();
+        }
+
+        $query = $this->getBaseQuery($id);
+        if ($query === null) {
+            return collect();
+        }
+
+        return $query->whereIn('id', $matchingIds)->get(); /** @phpstan-ignore method.notFound */
+    }
+
+    protected function getField(): ?Field
     {
         $mode = $this->config('mode', 'entries');
 
         if ($mode === 'entries') {
-            $blueprint = Collection::findByHandle($this->config('collection'))->entryBlueprint();
+            $collection = $this->config('collection');
+            $blueprint = $collection
+                ? CollectionFacade::findByHandle($collection)?->entryBlueprint()
+                : null;
         } elseif ($mode === 'terms') {
-            $blueprint = Taxonomy::findByHandle($this->config('taxonomy'))->termBlueprint();
+            $taxonomy = $this->config('taxonomy');
+            $blueprint = $taxonomy
+                ? Taxonomy::findByHandle($taxonomy)?->termBlueprint()
+                : null;
         } elseif ($mode === 'assets') {
-            $blueprint = AssetContainer::findByHandle($this->config('container'))->blueprint();
+            $container = $this->config('container');
+            $blueprint = $container
+                ? AssetContainer::findByHandle($container)?->blueprint()
+                : null;
+        } else {
+            return null;
         }
 
-        return $blueprint->fields()->get($this->config('field'));
+        /** @var ?Field */
+        return $blueprint?->fields()->get($this->config('field'));
     }
 }

@@ -1,33 +1,44 @@
 <template>
-    
-    <div class="item select-none">
-        <div class="item-inner">
-            <div
-                v-if="asset.is_svg"
-                class="img svg-img h-7 w-7 bg-no-repeat bg-center bg-cover text-center flex items-center justify-center"
-                :style="'background-image:url(' + asset.thumbnail + ')'"
-            ></div>
-            <img
-                class="asset-thumbnail max-h-full max-w-full rounded w-7 h-7 object-cover"
-                loading="lazy"
-                :src="asset.thumbnail"
-                :alt="asset.basename"
-                v-if="asset.is_image"
-            />
-            <file-icon :extension="asset.extension" v-else class="w-7 h-7" />
-            <a :href="asset.edit_url" v-text="asset.title" class="flex items-center flex-1 ml-3 text-xs text-left truncate w-full" v-tooltip="asset.title" />
-            <div v-text="asset.size" class="hidden @xs:inline asset-filesize text-xs text-gray-600 px-2" />
+    <div
+        class="shadow-ui-sm relative flex w-full items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 mb-1.5 last:mb-0 text-base dark:border-gray-700 dark:bg-gray-900"
+    >
+        <img v-if="asset.thumbnail" :src="asset.thumbnail" class="w-7 h-7 shrink-0 rounded object-cover" :alt="asset.title" />
+        <ui-icon v-else name="assets" class="w-7 h-7 shrink-0" />
+        <div class="flex flex-1 items-center line-clamp-1 text-sm text-gray-600 dark:text-gray-300">
+            <a :href="asset.edit_url" v-text="asset.title" class="line-clamp-1 text-sm text-gray-600 dark:text-gray-300" v-tooltip="asset.title" />
+            <div class="flex flex-1 items-center justify-end">
+                <div
+                    v-if="asset.size"
+                    v-text="asset.size"
+                    class="text-2xs tracking-tight me-2 hidden whitespace-nowrap text-gray-500 @sm:block"
+                />
+
+                <div v-if="removable" class="flex items-center">
+                    <ui-dropdown>
+                        <template #trigger>
+                            <ui-button icon="dots" variant="ghost" size="xs" :aria-label="__('Open dropdown menu')" />
+                        </template>
+                        <ui-dropdown-menu>
+                            <ui-dropdown-item :text="__('Unlink')" variant="destructive" @click="$emit('remove')" />
+                        </ui-dropdown-menu>
+                    </ui-dropdown>
+                </div>
+            </div>
         </div>
     </div>
-
 </template>
 
-<script>
-export default {
-
-    props: {
-        asset: Object,
+<script setup>
+defineProps({
+    asset: {
+        type: Object,
+        required: true,
     },
+    removable: {
+        type: Boolean,
+        default: false,
+    },
+});
 
-};
+defineEmits(['remove']);
 </script>

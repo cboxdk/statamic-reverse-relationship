@@ -1,27 +1,76 @@
 {
-    "name": "tv2regionerne/statamic-reverse-relationship",
+    "name": "cboxdk/statamic-reverse-relationship",
+    "description": "Traverse relationships in reverse — see which entries, terms, or assets reference the current item without storing anything on it.",
+    "license": "MIT",
+    "type": "statamic-addon",
+    "keywords": [
+        "statamic",
+        "addon",
+        "relationship",
+        "reverse",
+        "entries",
+        "fieldtype"
+    ],
+    "authors": [
+        {
+            "name": "Sylvester Damgaard",
+            "homepage": "https://github.com/cboxdk"
+        }
+    ],
+    "homepage": "https://github.com/cboxdk/statamic-reverse-relationship",
+    "support": {
+        "issues": "https://github.com/cboxdk/statamic-reverse-relationship/issues"
+    },
+    "require": {
+        "php": "^8.2",
+        "statamic/cms": "^6.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.27",
+        "orchestra/testbench": "^10.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0"
+    },
+    "conflict": {
+        "tv2regionerne/statamic-reverse-relationship": "*"
+    },
     "autoload": {
         "psr-4": {
-            "Tv2regionerne\\StatamicReverseRelationship\\": "src"
+            "Cbox\\ReverseRelationship\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Cbox\\ReverseRelationship\\Tests\\": "tests"
         }
     },
     "extra": {
         "statamic": {
-            "name": "Statamic Reverse Relationship",
-            "description": "Statamic Reverse Relationship addon"
+            "name": "Reverse Relationship",
+            "description": "Traverse relationships in reverse — see which entries, terms, or assets reference the current item."
         },
         "laravel": {
             "providers": [
-                "Tv2regionerne\\StatamicReverseRelationship\\ServiceProvider"
+                "Cbox\\ReverseRelationship\\ServiceProvider"
             ]
         }
     },
-    "require": {
-        "statamic/cms": "^4.39.0 || ^5.0"
+    "scripts": {
+        "test": "./vendor/bin/pest",
+        "lint": "./vendor/bin/pint --test",
+        "fix": "./vendor/bin/pint",
+        "analyse": "./vendor/bin/phpstan analyse --no-progress",
+        "check": [
+            "@lint",
+            "@analyse",
+            "@test"
+        ]
     },
     "config": {
         "allow-plugins": {
-            "pixelfear/composer-dist-plugin": true
+            "pestphp/pest-plugin": true,
+            "pixelfear/composer-dist-plugin": false
         }
     }
 }

@@ -1,0 +1,14 @@
+title: Image
+tabs:
+  main:
+    display: Main
+    sections:
+      - fields:
+          - handle: alt
+            field:
+              type: text
+          - handle: related_page
+            field:
+              type: entries
+              collections:
+                - pages

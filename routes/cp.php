@@ -1,5 +1,7 @@
 <?php
 
-use Tv2regionerne\StatamicReverseRelationship\Http\Controllers\ReverseRelationshipController;
+use Cbox\ReverseRelationship\Http\Controllers\ReverseRelationshipController;
 
 Route::get('reverse-relationship', [ReverseRelationshipController::class, 'index'])->name('reverse-relationship.index');
+Route::post('reverse-relationship/sync', [ReverseRelationshipController::class, 'sync'])->name('reverse-relationship.sync');
+Route::get('reverse-relationship/search', [ReverseRelationshipController::class, 'search'])->name('reverse-relationship.search');
