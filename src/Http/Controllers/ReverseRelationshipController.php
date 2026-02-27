@@ -194,6 +194,53 @@ class ReverseRelationshipController
         ]);
     }
 
+    public function fields(Request $request): JsonResponse
+    {
+        $request->validate([
+            'mode' => ['required', 'string', 'in:entries,terms,assets'],
+            'handle' => ['required', 'string'],
+        ]);
+
+        /** @var string $mode */
+        $mode = $request->input('mode');
+        /** @var string $handle */
+        $handle = $request->input('handle');
+
+        $blueprints = collect();
+
+        if ($mode === 'entries') {
+            $collection = CollectionFacade::findByHandle($handle);
+            $blueprints = $collection ? $collection->entryBlueprints() : collect();
+        } elseif ($mode === 'terms') {
+            $taxonomy = Taxonomy::findByHandle($handle);
+            $blueprints = $taxonomy ? collect([$taxonomy->termBlueprint()]) : collect();
+        } elseif ($mode === 'assets') {
+            $container = AssetContainer::findByHandle($handle);
+            $blueprints = $container ? collect([$container->blueprint()]) : collect();
+        }
+
+        $relationshipTypes = ['entries', 'terms', 'assets', 'taxonomy_terms'];
+        /** @var array<string, true> $seen */
+        $seen = [];
+        /** @var list<array{handle: string, display: string, type: string}> $options */
+        $options = [];
+
+        foreach ($blueprints as $blueprint) {
+            foreach ($blueprint->fields()->all() as $field) {
+                if (in_array($field->type(), $relationshipTypes, true) && ! isset($seen[$field->handle()])) {
+                    $seen[$field->handle()] = true;
+                    $options[] = [
+                        'handle' => $field->handle(),
+                        'display' => $field->display(),
+                        'type' => $field->type(),
+                    ];
+                }
+            }
+        }
+
+        return response()->json(['data' => $options]);
+    }
+
     /**
      * @param  array<string, mixed>  $config
      * @param  list<string>  $excludeIds

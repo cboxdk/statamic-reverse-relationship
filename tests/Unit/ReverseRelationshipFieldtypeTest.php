@@ -506,5 +506,5 @@ it('has entries icon', function () {
     $fieldtype = new ReverseRelationship;
 
     $reflection = new ReflectionProperty($fieldtype, 'icon');
-    expect($reflection->getValue($fieldtype))->toBe('entries');
+    expect($reflection->getValue($fieldtype))->toBe('fieldtype-entries');
 });

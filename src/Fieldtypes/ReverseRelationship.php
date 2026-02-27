@@ -20,7 +20,7 @@ class ReverseRelationship extends Fieldtype
     protected static $title = 'Reverse Relationship';
 
     /** @var string */
-    protected $icon = 'entries';
+    protected $icon = 'fieldtype-entries';
 
     /**
      * @return array<int, array<string, mixed>>
@@ -74,8 +74,8 @@ class ReverseRelationship extends Fieldtype
                     ],
                     'field' => [
                         'display' => __('Field'),
-                        'instructions' => __('The related field'),
-                        'type' => 'text',
+                        'instructions' => __('The relationship field on the related items that points back here'),
+                        'type' => 'reverse_relationship_field_select',
                         'validate' => 'required',
                     ],
                     'sort' => [

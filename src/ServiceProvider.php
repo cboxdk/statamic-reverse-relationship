@@ -14,6 +14,7 @@ class ServiceProvider extends AddonServiceProvider
     /** @var list<class-string<\Statamic\Fields\Fieldtype>> */
     protected $fieldtypes = [
         Fieldtypes\ReverseRelationship::class,
+        Fieldtypes\ReverseRelationshipFieldSelect::class,
     ];
 
     /** @var list<class-string<\Statamic\Tags\Tags>> */
