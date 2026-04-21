@@ -9,6 +9,6 @@
         "vite": "^6.0"
     },
     "dependencies": {
-        "@statamic/cms": "file:./vendor/statamic/cms/resources/dist-package"
+        "@statamic/cms": "file:./vendor/statamic/cms/packages/cms"
     }
 }
