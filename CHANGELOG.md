@@ -2,6 +2,13 @@
 
 All notable changes to this package will be documented in this file.
 
+## [2.1.2] - 2026-04-21
+
+### Fixed
+- **Config field validation error** — the `ReverseRelationshipFieldSelect` component emitted the Vue 2 `input` event instead of `update:value`, causing `field: null` to be sent when saving fieldtype configuration
+- **Build failure on fresh install** — the `@statamic/cms` dependency in `package.json` pointed to the old Statamic 5 path (`resources/dist-package`); updated to `packages/cms`
+- **Rebuilt dist assets** so the addon works out of the box via Composer without requiring `npm run build`
+
 ## [2.0.0] - 2026-02-27
 
 Complete rewrite for Statamic 6, Laravel 12, Vue 3, and PHP 8.2+. This version is not backwards-compatible with the original `tv2regionerne/statamic-reverse-relationship` package.
