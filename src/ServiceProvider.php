@@ -2,6 +2,7 @@
 
 namespace Cbox\ReverseRelationship;
 
+use Statamic\Fields\Fieldtype;
 use Statamic\Providers\AddonServiceProvider;
 
 class ServiceProvider extends AddonServiceProvider
@@ -11,7 +12,7 @@ class ServiceProvider extends AddonServiceProvider
         'cp' => __DIR__.'/../routes/cp.php',
     ];
 
-    /** @var list<class-string<\Statamic\Fields\Fieldtype>> */
+    /** @var list<class-string<Fieldtype>> */
     protected $fieldtypes = [
         Fieldtypes\ReverseRelationship::class,
         Fieldtypes\ReverseRelationshipFieldSelect::class,

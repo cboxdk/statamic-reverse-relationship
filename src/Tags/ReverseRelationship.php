@@ -3,6 +3,7 @@
 namespace Cbox\ReverseRelationship\Tags;
 
 use Cbox\ReverseRelationship\Fieldtypes\ReverseRelationship as ReverseRelationshipFieldtype;
+use Statamic\Contracts\Query\Builder;
 use Statamic\Facades\Asset;
 use Statamic\Facades\Entry;
 use Statamic\Facades\Term;
@@ -143,7 +144,7 @@ class ReverseRelationship extends Tags
     }
 
     /**
-     * @return \Statamic\Contracts\Query\Builder|null
+     * @return Builder|null
      */
     protected function getBaseQuery()
     {
@@ -155,7 +156,7 @@ class ReverseRelationship extends Tags
                 return null;
             }
 
-            /** @var \Statamic\Contracts\Query\Builder */
+            /** @var Builder */
             return Entry::query()
                 ->where('collection', $collection)
                 ->whereStatus('published');

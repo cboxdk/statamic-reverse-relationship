@@ -3,6 +3,7 @@
 namespace Cbox\ReverseRelationship\Fieldtypes;
 
 use Illuminate\Support\Collection;
+use Statamic\Contracts\Data\Augmentable;
 use Statamic\Contracts\Query\Builder;
 use Statamic\Facades\Asset;
 use Statamic\Facades\AssetContainer;
@@ -232,7 +233,7 @@ class ReverseRelationship extends Fieldtype
             ->orderBy($sortField)
             ->get()
             ->filter(function (mixed $item) use ($fieldHandle, $id, $isSingleValue): bool {
-                /** @var \Statamic\Contracts\Data\Augmentable $item */
+                /** @var Augmentable $item */
                 $value = method_exists($item, 'value')
                     ? $item->value($fieldHandle)
                     : $item->get($fieldHandle); /** @phpstan-ignore method.notFound */
