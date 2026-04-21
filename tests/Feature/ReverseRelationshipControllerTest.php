@@ -2,13 +2,14 @@
 
 use Illuminate\Support\Facades\Storage;
 use Statamic\Facades\Asset;
+use Statamic\Facades\Entry;
 use Statamic\Facades\User;
 
 // Clean up any users saved to the fixture store after each test
 afterEach(function () {
     try {
         User::query()->get()->each(fn ($user) => $user->delete());
-    } catch (\Throwable) {
+    } catch (Throwable) {
         // Ignore cleanup errors — user store may be empty
     }
 });
@@ -443,7 +444,7 @@ it('sync detaches entries and returns updated data', function () {
     expect($response->json('errors'))->toBeEmpty();
 
     // Verify the entry was actually detached
-    $entry = \Statamic\Facades\Entry::find('referring-multi-id');
+    $entry = Entry::find('referring-multi-id');
     $related = $entry->get('related');
     expect($related)->not->toContain('origin-id');
 });
@@ -468,7 +469,7 @@ it('sync attaches entries and returns updated data', function () {
     expect($response->json('errors'))->toBeEmpty();
 
     // Verify the entry was actually attached
-    $entry = \Statamic\Facades\Entry::find('referring-multi-id');
+    $entry = Entry::find('referring-multi-id');
     $related = $entry->get('related');
     expect($related)->toContain('origin-id');
 });

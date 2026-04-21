@@ -4,7 +4,7 @@
             ref="inputEl"
             type="text"
             :value="value"
-            @input="$emit('input', $event.target.value)"
+            @input="$emit('update:value', $event.target.value)"
             class="input-text border border-gray-400 dark:border-gray-700 rounded-sm"
             :placeholder="__('Type a field handle...')"
         />
@@ -49,7 +49,7 @@ const props = defineProps({
     meta: { type: Object, default: () => ({}) },
 });
 
-const emit = defineEmits(['input']);
+const emit = defineEmits(['update:value']);
 
 const inputEl = ref(null);
 const loading = ref(false);
@@ -66,7 +66,7 @@ let pollInterval = null;
 const getFieldSettingsValue = inject('getFieldSettingsValue', null);
 
 function selectOption(handle) {
-    emit('input', handle);
+    emit('update:value', handle);
 
     // Also force-update the native input element so the user sees the change immediately
     if (inputEl.value) {
